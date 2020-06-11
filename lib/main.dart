@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:parking_locator/models/place.dart';
 import 'package:parking_locator/screens/search.dart';
 import 'package:parking_locator/services/geolocator_service.dart';
+import 'package:parking_locator/services/places_service.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -9,11 +12,19 @@ void main() {
 
 class MyApp extends StatelessWidget {
   final locatorService = GeoLocatorService();
+  final placesService = PlacesService();
 
   @override
   Widget build(BuildContext context) {
-    return FutureProvider(
-      create: (context) => locatorService.getLocation(),
+    return MultiProvider(
+      providers: [
+        FutureProvider(create: (context) => locatorService.getLocation()),
+        ProxyProvider<Position, Future<List<Place>>>(
+          update: (context, position, places) => (position != null)
+              ? placesService.getPlaces(position.latitude, position.longitude)
+              : null,
+        )
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Parking Locator',
