@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:parking_locator/models/place.dart';
 import 'package:parking_locator/services/geolocator_service.dart';
+import 'package:parking_locator/services/marker_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,12 +14,16 @@ class Search extends StatelessWidget {
     final currentPosition = Provider.of<Position>(context);
     final placesProvider = Provider.of<Future<List<Place>>>(context);
     final geoService = GeoLocatorService();
+    final markerService = MarkerService();
 
     return FutureProvider(
       create: (context) => placesProvider,
       child: Scaffold(
         body: (currentPosition != null)
             ? Consumer<List<Place>>(builder: (_, places, __) {
+                var markers = (places != null)
+                    ? markerService.getMarkers(places)
+                    : List<Marker>();
                 return (places != null)
                     ? Column(
                         children: <Widget>[
@@ -32,6 +37,7 @@ class Search extends StatelessWidget {
                                 zoom: 16.0,
                               ),
                               zoomGesturesEnabled: true,
+                              markers: Set<Marker>.of(markers),
                             ),
                           ),
                           SizedBox(height: 6),
