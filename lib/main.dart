@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:parking_locator/models/place.dart';
 import 'package:parking_locator/screens/search.dart';
 import 'package:parking_locator/services/geolocator_service.dart';
@@ -19,9 +20,16 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         FutureProvider(create: (context) => locatorService.getLocation()),
-        ProxyProvider<Position, Future<List<Place>>>(
-          update: (context, position, places) => (position != null)
-              ? placesService.getPlaces(position.latitude, position.longitude)
+        FutureProvider(create: (context) {
+          ImageConfiguration configuration =
+              createLocalImageConfiguration(context);
+          return BitmapDescriptor.fromAssetImage(
+              configuration, 'assets/icons/parking-icon.png');
+        }),
+        ProxyProvider2<Position, BitmapDescriptor, Future<List<Place>>>(
+          update: (context, position, icon, places) => (position != null)
+              ? placesService.getPlaces(
+                  position.latitude, position.longitude, icon)
               : null,
         )
       ],
