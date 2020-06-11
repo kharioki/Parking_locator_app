@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:parking_locator/models/place.dart';
 import 'package:parking_locator/services/geolocator_service.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Search extends StatelessWidget {
   @override
@@ -33,7 +34,7 @@ class Search extends StatelessWidget {
                               zoomGesturesEnabled: true,
                             ),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 6),
                           Expanded(
                             child: ListView.builder(
                               itemCount: places.length,
@@ -52,6 +53,7 @@ class Search extends StatelessWidget {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
+                                        SizedBox(height: 4),
                                         (places[index].rating != null)
                                             ? Row(
                                                 children: <Widget>[
@@ -70,7 +72,7 @@ class Search extends StatelessWidget {
                                                 ],
                                               )
                                             : Row(),
-                                        SizedBox(height: 6),
+                                        SizedBox(height: 5),
                                         Consumer<double>(
                                           builder: (context, meters, widget) =>
                                               (meters != null)
@@ -79,6 +81,16 @@ class Search extends StatelessWidget {
                                                   : Container(),
                                         ),
                                       ],
+                                    ),
+                                    trailing: IconButton(
+                                      icon: Icon(Icons.directions),
+                                      color: Theme.of(context).primaryColor,
+                                      onPressed: () {
+                                        _launchMapsUrl(
+                                          places[index].geometry.location.lat,
+                                          places[index].geometry.location.lng,
+                                        );
+                                      },
                                     ),
                                   ),
                                 ),
@@ -96,5 +108,15 @@ class Search extends StatelessWidget {
               ),
       ),
     );
+  }
+
+  void _launchMapsUrl(double lat, double lng) async {
+    final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
+
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }
